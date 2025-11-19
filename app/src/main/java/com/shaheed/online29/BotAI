@@ -1,0 +1,93 @@
+package com.shaheed.online29;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Random;
+
+/**
+ * Simple BotAI for 29 game.
+ * Works with simple card strings: "7H", "AD", "10S", etc.
+ */
+public class BotAI {
+
+    private final String botId;
+    private final Random rnd = new Random();
+
+    public BotAI(String botId) {
+        this.botId = botId;
+    }
+
+    public String chooseCard(List<String> hand,
+                             List<String> playable,
+                             List<String> trickCards,
+                             String trump) {
+
+        if (hand == null || hand.isEmpty()) return null;
+
+        // Playable = subset of hand; if null, assume all
+        List<String> options = (playable != null && !playable.isEmpty())
+                ? new ArrayList<>(playable)
+                : new ArrayList<>(hand);
+
+        Collections.shuffle(options, rnd);
+
+        // Prefer trump
+        if (trump != null && !trump.isEmpty()) {
+            for (String c : options) {
+                if (getSuit(c).equals(trump) && rnd.nextInt(100) < 60) {
+                    return c;
+                }
+            }
+        }
+
+        // If leading the trick
+        if (trickCards == null || trickCards.isEmpty()) {
+            options.sort((a, b) -> Integer.compare(cardStrength(b), cardStrength(a))); // high → low
+            if (rnd.nextInt(100) < 60) return options.get(0); // strong lead
+            return options.get(options.size() - 1);           // weak lead
+        }
+
+        // If already some cards played
+        String leadSuit = getSuit(trickCards.get(0));
+
+        // Try to follow suit and beat
+        for (String c : options) {
+            if (getSuit(c).equals(leadSuit)) {
+                if (canBeat(trickCards, c)) return c;
+            }
+        }
+
+        // Otherwise dump lowest card
+        options.sort((a, b) -> Integer.compare(cardStrength(a), cardStrength(b))); // low → high
+        return options.get(0);
+    }
+
+    private boolean canBeat(List<String> trickCards, String candidate) {
+        int top = -1;
+        for (String c : trickCards) {
+            int s = cardStrength(c);
+            if (s > top) top = s;
+        }
+        return cardStrength(candidate) > top;
+    }
+
+    private String getSuit(String card) {
+        return card.substring(card.length() - 1);
+    }
+
+    private int cardStrength(String c) {
+        String r = (c.length() == 2) ? c.substring(0, 1) : c.substring(0, c.length() - 1);
+        switch (r) {
+            case "A": return 14;
+            case "K": return 13;
+            case "Q": return 12;
+            case "J": return 11;
+            case "10": return 10;
+            case "9": return 9;
+            case "8": return 8;
+            case "7": return 7;
+            default: return 1;
+        }
+    }
+}
