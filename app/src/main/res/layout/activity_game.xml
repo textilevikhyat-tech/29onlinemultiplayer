@@ -1,19 +1,195 @@
+<?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/game_root"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:paddingLeft="@dimen/activity_horizontal_margin"
-    android:paddingRight="@dimen/activity_horizontal_margin"
-    android:paddingTop="@dimen/activity_vertical_margin"
-    android:paddingBottom="@dimen/activity_vertical_margin"
-    tools:context="com.shaheed.online29.GameActivity">
+    android:background="@android:color/background_dark"
+    android:padding="8dp">
 
-    <TextView
+    <!-- Round table background (use a drawable green_circle or keep transparent) -->
+    <ImageView
+        android:id="@+id/table_bg"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:src="@drawable/round_table_bg"   <!-- replace or remove if not available -->
+        android:scaleType="centerCrop"
+        android:adjustViewBounds="true"
+        android:layout_centerInParent="true"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentEnd="true"
+        android:contentDescription="table background" />
+
+    <!-- Top player area -->
+    <LinearLayout
+        android:id="@+id/player_top"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceLarge"
-        android:text="Large Text"
-        android:id="@+id/gametextViewusername"
+        android:orientation="vertical"
+        android:layout_marginTop="18dp"
+        android:layout_centerHorizontal="true"
+        android:gravity="center">
+        <TextView
+            android:id="@+id/top_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="PlayerTop"
+            android:textStyle="bold"
+            android:textColor="@android:color/white"/>
+        <LinearLayout
+            android:id="@+id/top_cards"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"/>
+    </LinearLayout>
+
+    <!-- Left player -->
+    <LinearLayout
+        android:id="@+id/player_left"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
         android:layout_centerVertical="true"
-        android:layout_centerHorizontal="true" />
+        android:layout_marginStart="12dp"
+        android:layout_alignParentStart="true"
+        android:gravity="center">
+        <TextView
+            android:id="@+id/left_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="PlayerLeft"
+            android:textStyle="bold"
+            android:textColor="@android:color/white"/>
+        <LinearLayout
+            android:id="@+id/left_cards"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"/>
+    </LinearLayout>
+
+    <!-- Right player -->
+    <LinearLayout
+        android:id="@+id/player_right"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_centerVertical="true"
+        android:layout_marginEnd="12dp"
+        android:layout_alignParentEnd="true"
+        android:gravity="center">
+        <TextView
+            android:id="@+id/right_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="PlayerRight"
+            android:textStyle="bold"
+            android:textColor="@android:color/white"/>
+        <LinearLayout
+            android:id="@+id/right_cards"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"/>
+    </LinearLayout>
+
+    <!-- Center play area -->
+    <FrameLayout
+        android:id="@+id/center_area"
+        android:layout_width="300dp"
+        android:layout_height="300dp"
+        android:layout_centerInParent="true"
+        android:foregroundGravity="center"
+        android:clipToPadding="false">
+
+        <!-- Table center where played cards appear -->
+        <LinearLayout
+            android:id="@+id/played_cards"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:orientation="vertical"/>
+    </FrameLayout>
+
+    <!-- Bottom (You) -->
+    <LinearLayout
+        android:id="@+id/player_bottom"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="100dp">
+        <TextView
+            android:id="@+id/bottom_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="You"
+            android:textStyle="bold"
+            android:textColor="@android:color/white"/>
+        <HorizontalScrollView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:fillViewport="true"
+            android:padding="6dp">
+            <LinearLayout
+                android:id="@+id/bottom_cards"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"/>
+        </HorizontalScrollView>
+    </LinearLayout>
+
+    <!-- Info / status -->
+    <TextView
+        android:id="@+id/tv_status"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Status"
+        android:textColor="@android:color/white"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentStart="true"
+        android:layout_margin="12dp" />
+
+    <!-- Quick action bar (Play with Bots / Quick Match) -->
+    <LinearLayout
+        android:id="@+id/action_bar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:orientation="horizontal"
+        android:gravity="center"
+        android:padding="8dp"
+        android:layout_marginBottom="12dp">
+
+        <Button
+            android:id="@+id/btn_vs_bots"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:text="Play With Bots" />
+
+        <Button
+            android:id="@+id/btn_quick_match"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:text="Quick Match" />
+
+        <Button
+            android:id="@+id/btn_pass"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:text="Pass" />
+
+        <Button
+            android:id="@+id/btn_play"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:text="Play" />
+
+    </LinearLayout>
+
 </RelativeLayout>
