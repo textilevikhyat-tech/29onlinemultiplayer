@@ -17,7 +17,8 @@ WORKDIR /app
 COPY . .
 
 # Build server using installed Gradle
-RUN gradle build --no-daemon
+RUN gradle build --no-daemon --stacktrace
+
 
 # Expose port (Render assigns actual PORT)
 EXPOSE 10000
