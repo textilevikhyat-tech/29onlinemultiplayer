@@ -1,19 +1,17 @@
 FROM eclipse-temurin:17-jdk
 
-RUN apt-get update && apt-get install -y wget unzip \
-    && wget https://services.gradle.org/distributions/gradle-7.6-bin.zip -P /tmp \
-    && unzip -d /opt/gradle /tmp/gradle-7.6-bin.zip \
-    && rm /tmp/gradle-7.6-bin.zip
-
-ENV GRADLE_HOME=/opt/gradle/gradle-7.6
-ENV PATH=${GRADLE_HOME}/bin:${PATH}
-
 WORKDIR /app
 
+# copy server folder contents into container
 COPY . .
 
-RUN gradle build --no-daemon
+# Make gradlew executable if present; otherwise assume wrapper exists
+RUN chmod +x gradlew || true
+
+# Build the jar
+RUN ./gradlew build --no-daemon
 
 EXPOSE 10000
 
-CMD ["java", "-jar", "build/libs/server.jar"]
+# run jar
+CMD ["sh", "-c", "java -jar build/libs/online29server-0.1.0.jar"]
