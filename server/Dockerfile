@@ -8,12 +8,12 @@ RUN apt-get update && apt-get install -y wget unzip \
 ENV GRADLE_HOME=/opt/gradle/gradle-7.6
 ENV PATH=${GRADLE_HOME}/bin:${PATH}
 
-WORKDIR /app/server
+WORKDIR /app
 
 COPY . .
 
-RUN gradle build --no-daemon --stacktrace
+RUN gradle build --no-daemon
 
 EXPOSE 10000
 
-CMD ["sh", "-c", "java -jar build/libs/*.jar"]
+CMD ["java", "-jar", "build/libs/server.jar"]
