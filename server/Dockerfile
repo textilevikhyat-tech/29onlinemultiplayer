@@ -2,15 +2,15 @@ FROM eclipse-temurin:17-jdk
 
 WORKDIR /app
 
-# Copy only server folder content into container
+# Copy server folder content
 COPY . .
 
-# Make sure Gradle wrapper is executable
+# Make Gradle wrapper executable
 RUN chmod +x gradlew
 
-# Build the jar using the Gradle wrapper
+# Build the project
 RUN ./gradlew build --no-daemon
 
 EXPOSE 10000
 
-CMD ["java", "-jar", "build/libs/server.jar"]
+CMD ["sh", "-c", "java -jar build/libs/*.jar"]
