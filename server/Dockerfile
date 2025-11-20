@@ -1,6 +1,5 @@
 FROM eclipse-temurin:17-jdk
 
-# Install Gradle
 RUN apt-get update && apt-get install -y wget unzip \
     && wget https://services.gradle.org/distributions/gradle-7.6-bin.zip -P /tmp \
     && unzip -d /opt/gradle /tmp/gradle-7.6-bin.zip \
@@ -9,11 +8,12 @@ RUN apt-get update && apt-get install -y wget unzip \
 ENV GRADLE_HOME=/opt/gradle/gradle-7.6
 ENV PATH=${GRADLE_HOME}/bin:${PATH}
 
-WORKDIR /app
+WORKDIR /app/server
+
 COPY . .
 
-RUN gradle build --no-daemon
+RUN gradle build --no-daemon --stacktrace
 
 EXPOSE 10000
 
-CMD ["sh", "-c", "java -jar server/build/libs/*"]
+CMD ["sh", "-c", "java -jar build/libs/*.jar"]
