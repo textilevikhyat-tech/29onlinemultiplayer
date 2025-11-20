@@ -1,17 +1,21 @@
+# Use official Java 17 image
 FROM eclipse-temurin:17-jdk
 
+# Set working directory
 WORKDIR /app
 
-# copy server folder contents into container
+# Copy ENTIRE project (not only server/)
 COPY . .
 
-# Make gradlew executable if present; otherwise assume wrapper exists
-RUN chmod +x gradlew || true
+# Move into server folder
+WORKDIR /app/server
+
+# Give permission to gradlew
+RUN chmod +x ./gradlew
 
 # Build the jar
 RUN ./gradlew build --no-daemon
 
 EXPOSE 10000
 
-# run jar
-CMD ["sh", "-c", "java -jar build/libs/online29server-0.1.0.jar"]
+CMD ["sh", "-c", "java -cp build/libs/* com.mygame.server.Main"]
