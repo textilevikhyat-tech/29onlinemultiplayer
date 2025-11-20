@@ -1,27 +1,29 @@
-# Use official Java 17 image from Eclipse Temurin
+# Use official Java 17 image
 FROM eclipse-temurin:17-jdk
-
-# Install Gradle
-RUN apt-get update && apt-get install -y wget unzip \
-    && wget https://services.gradle.org/distributions/gradle-7.6-bin.zip -P /tmp \
-    && unzip -d /opt/gradle /tmp/gradle-7.6-bin.zip \
-    && rm /tmp/gradle-7.6-bin.zip
-
-ENV GRADLE_HOME=/opt/gradle/gradle-7.6
-ENV PATH=${GRADLE_HOME}/bin:${PATH}
 
 # Set working directory
 WORKDIR /app
 
-# Copy server folder content into container
-COPY . .
+# Copy Gradle wrapper + build files first (for caching)
+COPY gradlew .
+COPY gradle ./gradle
+COPY build.gradle .
+COPY settings.gradle .
 
-# Build server using installed Gradle
-RUN gradle build --no-daemon --stacktrace
+# Give permission to gradlew
+RUN chmod +x gradlew
 
+# Download dependencies (better caching)
+RUN ./gradlew --no-daemon dependencies
 
-# Expose port (Render assigns actual PORT)
-EXPOSE 10000
+# Copy project source
+COPY src ./src
 
-# Start server; use wildcard jar in build/libs
-CMD ["sh", "-c", "java -cp build/libs/* com.mygame.server.Main"]
+# Build Spring Boot JAR
+RUN ./gradlew build --no-daemon
+
+# Expose port (Render injects $PORT automatically)
+EXPOSE 8080
+
+# Run Spring Boot JAR
+CMD ["sh", "-c", "java -jar build/libs/*.jar"]
