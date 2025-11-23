@@ -2,10 +2,10 @@ package com.shaheed.online29;
 
 import android.app.Activity;
 import android.os.Bundle;
-import android.view.Menu;
-import android.view.MenuItem;
+import android.util.Log;
 import android.widget.TextView;
 
+import org.json.JSONObject;
 
 public class GameActivity extends Activity {
 
@@ -15,31 +15,25 @@ public class GameActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_game);
-        findViewsById();
-    }
 
-    private void findViewsById() {
-        textViewusername = (TextView) findViewById(R.id.gametextViewusername);
-        textViewusername.setText(String.valueOf(Constants.actionUserId)+" "+Constants.gameId+" "+Constants.username);
-    }
+        textViewusername = findViewById(R.id.gametextViewusername);
 
+        textViewusername.setText(
+                Constants.username + " | GameID: " + Constants.gameId
+        );
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.game, menu);
-        return true;
-    }
+        // WebSocket connect
+        MyWebSocketClient.getInstance().connect();
 
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-        if (id == R.id.action_settings) {
-            return true;
+        // Join game message
+        try {
+            JSONObject joinMsg = new JSONObject();
+            joinMsg.put("type", "joinRoom");
+            joinMsg.put("roomId", Constants.gameId);
+            joinMsg.put("playerName", Constants.username);
+            MyWebSocketClient.getInstance().send(joinMsg);
+        } catch (Exception e) {
+            Log.e("WS", "JSON error: " + e.getMessage());
         }
-        return super.onOptionsItemSelected(item);
     }
 }
