@@ -2,83 +2,75 @@ package com.shaheed.online29;
 
 import android.util.Log;
 
-import org.java_websocket.client.WebSocketClient;
-import org.java_websocket.handshake.ServerHandshake;
+import org.json.JSONObject;
 
 import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.Map;
+import java.nio.ByteBuffer;
 
-import com.google.gson.Gson;
+import tech.gusavila92.websocketclient.WebSocketClient;
 
-public class WebSocketClient29 {
+public class MyWebSocketClient {
 
-    private static WebSocketClient29 instance;
-    private WebSocketClient client;
-    private final Gson gson = new Gson();
+    private WebSocketClient webSocketClient;
+    private static MyWebSocketClient instance;
+    private static final String WS_URL = "wss://two9onlinemultiplayer.onrender.com/ws";
 
-    public interface MessageListener {
-        void onMessage(Map<String, Object> message);
-    }
-
-    private MessageListener listener;
-
-    public static WebSocketClient29 getInstance() {
-        if (instance == null) instance = new WebSocketClient29();
+    public static MyWebSocketClient getInstance() {
+        if (instance == null) instance = new MyWebSocketClient();
         return instance;
-    }
-
-    public void setListener(MessageListener listener) {
-        this.listener = listener;
     }
 
     public void connect() {
         try {
-            URI uri = new URI("wss://two9onlinemultiplayer.onrender.com/ws/game");
+            URI uri = new URI(WS_URL);
 
-            client = new WebSocketClient(uri) {
+            webSocketClient = new WebSocketClient(uri) {
+
                 @Override
-                public void onOpen(ServerHandshake handshake) {
-                    Log.d("WS29", "Connected to WebSocket");
+                public void onOpen() {
+                    Log.d("WS", "Connected to server");
                 }
 
                 @Override
-                public void onMessage(String message) {
-                    Log.d("WS29", "Message: " + message);
-                    Map<String, Object> map = gson.fromJson(message, Map.class);
-
-                    if (listener != null) listener.onMessage(map);
+                public void onTextReceived(String message) {
+                    Log.d("WS", "Received: " + message);
+                    // yaha tum game events handle kar sakte ho
                 }
 
                 @Override
-                public void onClose(int code, String reason, boolean remote) {
-                    Log.d("WS29", "Disconnected: " + reason);
+                public void onBinaryReceived(byte[] data) {}
+
+                @Override
+                public void onPingReceived(byte[] data) {}
+
+                @Override
+                public void onPongReceived(byte[] data) {}
+
+                @Override
+                public void onException(Exception e) {
+                    Log.e("WS", "Error: " + e.getMessage());
                 }
 
                 @Override
-                public void onError(Exception ex) {
-                    Log.e("WS29", "Error", ex);
+                public void onCloseReceived() {
+                    Log.d("WS", "Disconnected");
                 }
             };
 
-            client.connect();
+            webSocketClient.setConnectTimeout(10000);
+            webSocketClient.setReadTimeout(60000);
+            webSocketClient.enableAutomaticReconnection(5000);
 
-        } catch (URISyntaxException e) {
-            Log.e("WS29", "Bad URI", e);
+            webSocketClient.connect();
+
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
-    public void send(Map<String, Object> data) {
-        if (client != null && client.isOpen()) {
-            client.send(gson.toJson(data));
+    public void send(JSONObject json) {
+        if (webSocketClient != null) {
+            webSocketClient.send(json.toString());
         }
-    }
-
-    public boolean isConnected() {
-        return client != null && client.isOpen();
-    }
-
-    public void disconnect() {
-        if (client != null) client.close();
     }
 }
