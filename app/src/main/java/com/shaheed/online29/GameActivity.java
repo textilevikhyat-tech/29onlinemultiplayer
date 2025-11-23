@@ -17,23 +17,21 @@ public class GameActivity extends Activity {
         setContentView(R.layout.activity_game);
 
         textViewusername = findViewById(R.id.gametextViewusername);
+        textViewusername.setText(Constants.username + " | Game: " + Constants.gameId);
 
-        textViewusername.setText(
-                Constants.username + " | GameID: " + Constants.gameId
-        );
+        // 1) Connect WebSocket
+        WSClient.getInstance().connect();
 
-        // WebSocket connect
-        MyWebSocketClient.getInstance().connect();
-
-        // Join game message
+        // 2) Send joinRoom request
         try {
-            JSONObject joinMsg = new JSONObject();
-            joinMsg.put("type", "joinRoom");
-            joinMsg.put("roomId", Constants.gameId);
-            joinMsg.put("playerName", Constants.username);
-            MyWebSocketClient.getInstance().send(joinMsg);
+            JSONObject join = new JSONObject();
+            join.put("type", "joinRoom");
+            join.put("roomId", Constants.gameId);
+            join.put("playerName", Constants.username);
+            WSClient.getInstance().send(join);
+
         } catch (Exception e) {
-            Log.e("WS", "JSON error: " + e.getMessage());
+            Log.e("WS", e.toString());
         }
     }
 }
