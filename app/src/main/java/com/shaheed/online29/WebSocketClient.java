@@ -1,76 +1,72 @@
-package com.shaheed.online29;
+package com.shaheed.online29.ws;
 
 import android.util.Log;
 
-import org.json.JSONObject;
+import com.google.gson.Gson;
 
-import java.net.URI;
-import java.nio.ByteBuffer;
+import java.util.Map;
 
-import tech.gusavila92.websocketclient.WebSocketClient;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
+import okhttp3.WebSocket;
+import okhttp3.WebSocketListener;
 
-public class MyWebSocketClient {
+public class WebSocketManager {
+    private static WebSocketManager instance;
+    private WebSocket ws;
+    private final OkHttpClient client;
+    private final Gson gson = new Gson();
+    private final String url = "wss://two9onlinemultiplayer.onrender.com/ws";
 
-    private WebSocketClient webSocketClient;
-    private static MyWebSocketClient instance;
-    private static final String WS_URL = "wss://two9onlinemultiplayer.onrender.com/ws";
+    public interface Callback {
+        void onMessage(Map<String,Object> msg);
+        void onOpen();
+        void onClose();
+    }
 
-    public static MyWebSocketClient getInstance() {
-        if (instance == null) instance = new MyWebSocketClient();
+    private Callback callback;
+
+    private WebSocketManager() {
+        client = new OkHttpClient();
+    }
+
+    public static WebSocketManager get() {
+        if (instance == null) instance = new WebSocketManager();
         return instance;
     }
 
-    public void connect() {
-        try {
-            URI uri = new URI(WS_URL);
-
-            webSocketClient = new WebSocketClient(uri) {
-
-                @Override
-                public void onOpen() {
-                    Log.d("WS", "Connected to server");
-                }
-
-                @Override
-                public void onTextReceived(String message) {
-                    Log.d("WS", "Received: " + message);
-                    // yaha tum game events handle kar sakte ho
-                }
-
-                @Override
-                public void onBinaryReceived(byte[] data) {}
-
-                @Override
-                public void onPingReceived(byte[] data) {}
-
-                @Override
-                public void onPongReceived(byte[] data) {}
-
-                @Override
-                public void onException(Exception e) {
-                    Log.e("WS", "Error: " + e.getMessage());
-                }
-
-                @Override
-                public void onCloseReceived() {
-                    Log.d("WS", "Disconnected");
-                }
-            };
-
-            webSocketClient.setConnectTimeout(10000);
-            webSocketClient.setReadTimeout(60000);
-            webSocketClient.enableAutomaticReconnection(5000);
-
-            webSocketClient.connect();
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+    public void setCallback(Callback cb){
+        this.callback = cb;
     }
 
-    public void send(JSONObject json) {
-        if (webSocketClient != null) {
-            webSocketClient.send(json.toString());
-        }
+    public void connect() {
+        Request request = new Request.Builder().url(url).build();
+        ws = client.newWebSocket(request, new WebSocketListener() {
+            @Override public void onOpen(WebSocket webSocket, Response response) {
+                Log.i("WS", "open");
+                if(callback!=null) callback.onOpen();
+            }
+            @Override public void onMessage(WebSocket webSocket, String text) {
+                Log.i("WS", "msg: "+text);
+                if(callback!=null) callback.onMessage(gson.fromJson(text, Map.class));
+            }
+            @Override public void onClosing(WebSocket webSocket, int code, String reason) {
+                webSocket.close(1000,null);
+                if(callback!=null) callback.onClose();
+            }
+            @Override public void onFailure(WebSocket webSocket, Throwable t, Response response) {
+                Log.e("WS","error",t);
+                if(callback!=null) callback.onClose();
+            }
+        });
+    }
+
+    public void send(Map<String,Object> m){
+        if(ws!=null) ws.send(gson.toJson(m));
+    }
+
+    public void close(){
+        if(ws!=null) ws.close(1000,null);
     }
 }
