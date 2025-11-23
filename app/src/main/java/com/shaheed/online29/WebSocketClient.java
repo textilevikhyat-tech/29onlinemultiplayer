@@ -1,59 +1,84 @@
 package com.shaheed.online29;
 
 import android.util.Log;
+
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.handshake.ServerHandshake;
 
 import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.Map;
 
-public class WSClient extends WebSocketClient {
+import com.google.gson.Gson;
 
-    public interface Listener {
-        void onMessageReceived(String msg);
+public class WebSocketClient29 {
+
+    private static WebSocketClient29 instance;
+    private WebSocketClient client;
+    private final Gson gson = new Gson();
+
+    public interface MessageListener {
+        void onMessage(Map<String, Object> message);
     }
 
-    private static WSClient instance;
-    private static Listener listener;
+    private MessageListener listener;
 
-    public static WSClient getInstance() {
+    public static WebSocketClient29 getInstance() {
+        if (instance == null) instance = new WebSocketClient29();
         return instance;
     }
 
-    public static void connect(String url, Listener ls) {
-        listener = ls;
+    public void setListener(MessageListener listener) {
+        this.listener = listener;
+    }
+
+    public void connect() {
         try {
-            instance = new WSClient(new URI(url));
-            instance.connect();
-        } catch (Exception e) {
-            e.printStackTrace();
+            URI uri = new URI("wss://two9onlinemultiplayer.onrender.com/ws/game");
+
+            client = new WebSocketClient(uri) {
+                @Override
+                public void onOpen(ServerHandshake handshake) {
+                    Log.d("WS29", "Connected to WebSocket");
+                }
+
+                @Override
+                public void onMessage(String message) {
+                    Log.d("WS29", "Message: " + message);
+                    Map<String, Object> map = gson.fromJson(message, Map.class);
+
+                    if (listener != null) listener.onMessage(map);
+                }
+
+                @Override
+                public void onClose(int code, String reason, boolean remote) {
+                    Log.d("WS29", "Disconnected: " + reason);
+                }
+
+                @Override
+                public void onError(Exception ex) {
+                    Log.e("WS29", "Error", ex);
+                }
+            };
+
+            client.connect();
+
+        } catch (URISyntaxException e) {
+            Log.e("WS29", "Bad URI", e);
         }
     }
 
-    private WSClient(URI uri) {
-        super(uri);
+    public void send(Map<String, Object> data) {
+        if (client != null && client.isOpen()) {
+            client.send(gson.toJson(data));
+        }
     }
 
-    @Override
-    public void onOpen(ServerHandshake handshake) {
-        Log.d("WS", "Connected to WebSocket");
+    public boolean isConnected() {
+        return client != null && client.isOpen();
     }
 
-    @Override
-    public void onMessage(String message) {
-        if (listener != null) listener.onMessageReceived(message);
-    }
-
-    @Override
-    public void onClose(int code, String reason, boolean remote) {
-        Log.d("WS", "WS Closed " + reason);
-    }
-
-    @Override
-    public void onError(Exception ex) {
-        ex.printStackTrace();
-    }
-
-    public void sendJSON(String json) {
-        send(json);
+    public void disconnect() {
+        if (client != null) client.close();
     }
 }
