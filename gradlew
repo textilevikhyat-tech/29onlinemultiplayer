@@ -1,10 +1,12 @@
 #!/usr/bin/env sh
+DIRNAME=$(cd "$(dirname "$0")"; pwd)
+APP_HOME=$DIRNAME
 
-##############################################################################
-#
-#  Gradle start up script for UN*X
-#
-##############################################################################
+CLASSPATH=$APP_HOME/gradle/wrapper/gradle-wrapper.jar
 
-DIR="$( cd "$( dirname "$0" )" && pwd )"
-exec "$DIR/gradle/wrapper/gradle-7.6/bin/gradle" "$@"
+JAVACMD=java
+if [ -n "$JAVA_HOME" ] ; then
+    JAVACMD="$JAVA_HOME/bin/java"
+fi
+
+exec "$JAVACMD" -classpath "$CLASSPATH" org.gradle.wrapper.GradleWrapperMain "$@"
