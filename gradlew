@@ -1,12 +1,12 @@
 #!/usr/bin/env sh
-DIRNAME=$(cd "$(dirname "$0")"; pwd)
-APP_HOME=$DIRNAME
 
-CLASSPATH=$APP_HOME/gradle/wrapper/gradle-wrapper.jar
+##############################################################################
+##
+##  Gradle start up script for UN*X
+##
+##############################################################################
 
-JAVACMD=java
-if [ -n "$JAVA_HOME" ] ; then
-    JAVACMD="$JAVA_HOME/bin/java"
-fi
+# Attempt to set APP_HOME
+APP_HOME=$(cd "${0%/*}" && pwd -P)
 
-exec "$JAVACMD" -classpath "$CLASSPATH" org.gradle.wrapper.GradleWrapperMain "$@"
+# Add default
